@@ -35,19 +35,18 @@ In the first task, you will explore how k-Means perform on datasets with diverse
 # the question asked. 
 
 def fit_kmeans(dataset, n_clusters):
-        if isinstance(dataset, tuple) and len(dataset) == 2:
-             data, labels = dataset  # Assuming dataset is a tuple (data, labels)
-        else:
-             data = dataset  # Assuming dataset is just the data
-             labels = None  # Unpacking the dataset into data and labels
-        scaler = StandardScaler()
-        data_scaled = scaler.fit_transform(data)  # Standardizing the data
-    
-    # Applying KMeans
-        kmeans = KMeans(n_clusters=n_clusters, init='random', n_init=10, random_state=62)
-        kmeans.fit(data_scaled)
-    
-        return kmeans.labels_
+         data, _ = dataset
+
+    # Standardizing the data
+         scaler = StandardScaler()
+         data_standardized = scaler.fit_transform(data)
+
+    # Initializing and fitting the KMeans model
+         kmeans = KMeans(n_clusters=n_clusters, init='random', random_state=42)
+         kmeans.fit(data_standardized)
+
+    # Returning the labels
+         return kmeans.labels_
 
 
 def compute():
@@ -56,27 +55,26 @@ def compute():
     """
     A.	Load the following 5 datasets with 100 samples each: noisy_circles (nc), noisy_moons (nm), blobs with varied variances (bvv), Anisotropicly distributed data (add), blobs (b). Use the parameters from (https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html), with any random state. (with random_state = 42). Not setting the correct random_state will prevent me from checking your results.
     """
-    n_samples = 100
     random_state = 42
+    n_samples = 100
 
+# Generating the datasets as per the provided specifications
     noisy_circles = datasets.make_circles(n_samples=n_samples, factor=.5, noise=.05, random_state=random_state)
     noisy_moons = datasets.make_moons(n_samples=n_samples, noise=.05, random_state=random_state)
-    blobs_varied = datasets.make_blobs(n_samples=n_samples, cluster_std=[1.0, 2.5, 0.5], random_state=random_state)
-    
-    aniso_data, _ = datasets.make_blobs(n_samples=n_samples, random_state=random_state)
-    transformation = [[0.6, -0.6], [-0.4, 0.8]]
-    aniso_data = np.dot(aniso_data, transformation)
-    
+    varied = datasets.make_blobs(n_samples=n_samples, cluster_std=[1.0, 2.5, 0.5], random_state=random_state)
+    aniso = datasets.make_blobs(n_samples=n_samples, random_state=random_state)
     blobs = datasets.make_blobs(n_samples=n_samples, random_state=random_state)
 
+# Anisotropicly transforming the data
+    transformation = [[0.6, -0.6], [-0.4, 0.8]]
+    aniso = (np.dot(aniso[0], transformation), aniso[1])
    
-   
-    dct = answers["1A: datasets"] = {
-    "noisy_circles": noisy_circles[0],
-    "noisy_moons": noisy_moons[0],
-    "blobs_varied": blobs_varied[0],
-    "anisotropic": aniso_data,
-    "blobs": blobs[0],
+    datasets_dict = dct = answers["1A: datasets"] = {
+    'noisy_circles': noisy_circles,
+    'noisy_moons': noisy_moons,
+    'varied': varied,
+    'aniso': aniso,
+    'blobs': blobs
     }
 
     """
@@ -92,29 +90,26 @@ def compute():
     
     Create a pdf of the plots and return in your report. 
     """
-    k_values = [2, 3,5,10]
-    dataset_1 = {
-         'noisy_circles': noisy_circles[0],  # Assuming noisy_circles = (data, labels)
-         'noisy_moons': noisy_moons[0],
-         'blobs_varied': blobs_varied[0],
-         'anisotropic': aniso_data,
-         'blobs': blobs[0],
-        }
+    k_values = [2, 3, 5, 10]
+    kmeans_results = {}
 
-    l = 5
+# Iterate over each dataset and each k value, apply KMeans and store the results
+    for dataset_name, dataset in datasets_dict.items():
+        data, _ = dataset
+        scaler = StandardScaler()
+        data_standardized = scaler.fit_transform(data)
     
-    clustering_results = {}
-
-    for name, data in dataset_1.items():
-            clustering_results[name] = {}
-            for k in k_values:
-                 clustering_results[name][k] = fit_kmeans(data, k)
-
-
-    kmeans_dct = {name: ([data, None], clustering_results[name]) for name, data in dataset_1.items()}
+        kmeans_results[dataset_name] = (dataset, {})
+        for k in k_values:
+            kmeans = KMeans(n_clusters=k, init='random', random_state=42)
+            kmeans.fit(data_standardized)
+            kmeans_results[dataset_name][1][k] = kmeans.labels_
 
 
-    plot_part1C(kmeans_dct, "report.pdf")
+
+    kmeans_dct = {name: ([data, None], kmeans_results[name][1]) for name, (data, _) in datasets_dict.items()}
+
+    plot_part1C(kmeans_dct, "clustering_results.pdf")
     
      
     
@@ -140,10 +135,42 @@ def compute():
     Create a pdf of the plots and return in your report. 
     """
    
+
+    kmeans_results = {}
+    random_states = [42, 43, 44, 45]  # Example random states
+    k_values = [2, 3]
+
+    for random_state in random_states:
+         for dataset_name, dataset in datasets_dict.items():
+             data, _ = dataset
+             scaler = StandardScaler()
+             data_standardized = scaler.fit_transform(data)
+        
+             for k in k_values:
+                kmeans = KMeans(n_clusters=k, init='random', random_state=random_state)
+                kmeans.fit(data_standardized)
+                if dataset_name not in kmeans_results:
+                     kmeans_results[dataset_name] = {}
+                if k not in kmeans_results[dataset_name]:
+                     kmeans_results[dataset_name][k] = {}
+                kmeans_results[dataset_name][k][random_state] = kmeans.labels_
+
+# Now we construct kmeans_dct with the correct structure
+    selected_random_state = 44  # Or any other random state from the list
+    kmeans_dct = {}
+
+    for name, (data, _) in datasets_dict.items():
+    # Extract the clustering results for the selected random state and all k values
+       clustering_results = {k: kmeans_results[name][k][selected_random_state] for k in k_values if selected_random_state in kmeans_results[name][k]}
+       kmeans_dct[name] = ([data, None], clustering_results)
+
+# Assuming plot_part1C is defined and works as expected
+    plot_part1C(kmeans_dct, "report.pdf")
+
     # dct value: list of dataset abbreviations
     # Look at your plots, and return your answers.
     # The plot is part of your report, a pdf file name "report.pdf", in your repository.
-    dct = answers["1D: datasets sensitive to initialization"] = {"nc","nm","bvv","add","b"}
+    dct = answers["1D: datasets sensitive to initialization"] = {}
 
     return answers
 
