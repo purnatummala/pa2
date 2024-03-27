@@ -69,12 +69,12 @@ def compute():
     transformation = [[0.6, -0.6], [-0.4, 0.8]]
     aniso = (np.dot(aniso[0], transformation), aniso[1])
    
-    datasets_dict = dct = answers["compute_1A: datasets_dict"] = {
-    'nc': noisy_circles,
-    'nm': noisy_moons,
-    'bvv': varied,
-    'abb': aniso,
-    'b': blobs
+    datasets_dict = dct = answers["1A: datasets"] = {
+      'nc': (noisy_circles[0], noisy_circles[1]),  # Assuming noisy_circles is a tuple of (data, labels)
+        'nm': (noisy_moons[0], noisy_moons[1]),
+        'bvv': (varied[0], varied[1]),
+        'abb': (aniso[0], aniso[1]),  # Check if this key should be 'abb' or 'aniso'
+        'b': (blobs[0], blobs[1])
     }
 
     """
