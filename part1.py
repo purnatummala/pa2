@@ -69,7 +69,7 @@ def compute():
     transformation = [[0.6, -0.6], [-0.4, 0.8]]
     aniso = (np.dot(aniso[0], transformation), aniso[1])
    
-    datasets_dict = dct = answers["1A: datasets"] = {
+    datasets_dict = dct = answers["compute_1A: datasets_dict"] = {
     'nc': noisy_circles,
     'nm': noisy_moons,
     'bvv': varied,
