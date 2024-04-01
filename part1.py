@@ -21,16 +21,29 @@ def compute():
     n_samples = 100
     random_state = 42
 
-    # Generating datasets
-    datasets_dict = {
-        'nc': datasets.make_circles(n_samples=n_samples, factor=.5, noise=.05, random_state=random_state),
-        'nm': datasets.make_moons(n_samples=n_samples, noise=.05, random_state=random_state),
-        'bvv': datasets.make_blobs(n_samples=n_samples, cluster_std=[1.0, 2.5, 0.5], random_state=random_state),
-        'add': (np.dot(datasets.make_blobs(n_samples=n_samples, random_state=random_state)[0], [[0.6, -0.6], [-0.4, 0.8]]),
-                datasets.make_blobs(n_samples=n_samples, random_state=random_state)[1]),
-        'b': datasets.make_blobs(n_samples=n_samples, random_state=random_state)
-    }
+# Loading the datasets as per the specified requirements
+    noisy_circles = datasets.make_circles(n_samples=n_samples, factor=.5, noise=.05, random_state=random_state)
+    noisy_moons = datasets.make_moons(n_samples=n_samples, noise=.05, random_state=random_state)
+    blobs_varied = datasets.make_blobs(n_samples=n_samples, cluster_std=[1.0, 2.5, 0.5], random_state=random_state)
+    aniso_data, aniso_labels = datasets.make_blobs(n_samples=n_samples, random_state=random_state)
+    aniso = (np.dot(aniso_data, [[0.6, -0.6], [-0.4, 0.8]]), aniso_labels)
+    blobs = datasets.make_blobs(n_samples=n_samples, random_state=random_state)
 
+# Storing the datasets in the dictionary
+    datasets_dict = {
+    'nc': noisy_circles,
+    'nm': noisy_moons,
+    'bvv': blobs_varied,
+    'add': aniso,
+    'b': blobs
+}
+
+
+    answers = {
+    "1A: datasets": datasets_dict
+}
+    
+    dct = answers["1B: fit_kmeans"] = fit_kmeans
     k_values = [2, 3, 5, 10]
     random_states = [42, 43, 44, 45]
     kmeans_results = {}
@@ -61,7 +74,6 @@ def compute():
     # Plotting results for the selected random state
     plot_part1C(kmeans_dct, "clustering_results.pdf")
 
-    # Placeholder for sensitivity analysis
     answers["1D: datasets sensitive to initialization"] = ["nc", "nm"]
 
     return answers
